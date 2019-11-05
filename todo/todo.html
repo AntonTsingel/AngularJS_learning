@@ -1,0 +1,100 @@
+<!doctype html>
+<html ng-app="todoApp">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.22/angular.min.js"></script>
+    <style>
+    .done-true {
+      text-decoration: line-through;
+      color: grey;
+    }
+
+    input:required {
+    box-shadow:none;
+    }
+    </style>
+</head>
+<body>
+<script>
+    var app = angular.module('todoApp', [])
+
+app.controller('TodoListController', ['$scope', function($scope) {
+    $scope.todos = [];
+
+    $scope.newField = [];
+
+    $scope.addTodo = function() {
+        $scope.todos.push({text:$scope.todoText, done:false, editing: false});
+        $scope.todoText = '';
+    };
+
+    $scope.remaining = function() {
+        var count = 0;
+        angular.forEach($scope.todos, function(todo) {
+            count += todo.done ? 0 : 1;
+        });
+          return count;
+        };
+
+    $scope.delete = function() {
+        var oldTodos = $scope.todos;
+        $scope.todos = [];
+        angular.forEach(oldTodos, function(todo) {
+           if (!todo.done) $scope.todos.push(todo);
+        });
+    };
+
+    $scope.remove = function(){
+        $scope.todos.splice(this.$index, 1);
+    };
+
+
+    $scope.change = function(field){
+        var todoIndex = $scope.todos.indexOf(field);
+        $scope.newField[todoIndex] = angular.copy(field);
+        $scope.todos[todoIndex].editing = true;
+    }
+
+    $scope.save = function(index) {
+      $scope.todos[index].editing = false;
+      
+    };
+
+    $scope.cancel = function(index) {
+        $scope.todos[index] = $scope.newField[index];      
+    };
+
+
+
+}]);
+</script>
+<h2>Todo List</h2>
+
+<div ng-controller="TodoListController">
+
+<form ng-submit="addTodo()" name="form">
+    <input type="text" ng-model="todoText"  size="30" placeholder="add new todo here" required>
+    <input class="btn-primary" type="submit" value="add"> 
+</form>
+
+<div>Incompleted : {{remaining()}}</div>
+<div>Completed : {{todos.length - remaining()}}</div>
+
+<a href="" ng-click="delete()">Delete</a>
+
+<ul class="unstyled">
+   <li ng-repeat="todo in todos | orderBy : $index:true">
+       <button type="button" ng-click="remove()">&#10008;</button>
+       <input type="checkbox" ng-model="todo.done">
+       <span class="done-{{todo.done}}" ng-hide="todo.editing">{{todo.text}}</span>
+       <input type="text" ng-show="todo.editing" ng-model="todo.text">
+       <button type="submit" ng-hide="todo.editing" ng-click="change(todo); todo.editing === true">Edit</button>
+       <button type="submit" ng-show="todo.editing" ng-click="save($index); todo.editing === false">Save</button>
+       <button type="submit" ng-show="todo.editing" ng-click="cancel($index); todo.editing === false">Cancel</button>
+    </li>
+</ul>
+
+<pre>NewField : {{newField | json}}</pre>
+<pre>Todos : {{todos | json}}</pre>
+</div>    
+</body>
+</html>
